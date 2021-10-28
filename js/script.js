@@ -9,9 +9,21 @@ const message = document.querySelector(".message");
 const playAgainButton = document.querySelector(".play-again");
 
 
-const word = "magnolia";  //test word is temporary until random words are fetched from API
+let word = "magnolia";  //test word is temporary until random words are fetched from API
 const guessedLetters = []; //sets empty array for guessed letters
+let remainingGuesses = 8;
 
+const getWord = async function (){
+    const res = await fetch ("https://gist.githubusercontent.com/skillcrush-curriculum/7061f1d4d3d5bfe47efbfbcfe42bf57e/raw/5ffc447694486e7dea686f34a6c085ae371b43fe/words.txt");
+    const data = await res.text();
+    const wordArray = data.split("\n");
+    const randomIndex = Math.floor(Math.random()* wordArray.length);
+    word = wordArray [randomIndex].trim();
+    //console.log (data);
+    placeholder (word);
+};
+
+getWord();
 
 //function to use placeholder dots for each letter of the mystery word
 const placeholder = function(word){
@@ -51,7 +63,7 @@ const inputCheck = function(input){
     }
     return input;
 };
-
+//make a guess function
 const makeGuess = function (guess){
     guess = guess.toUpperCase();
     if (guessedLetters.includes(guess)){
@@ -59,6 +71,7 @@ const makeGuess = function (guess){
     } else {
         guessedLetters.push(guess);
         console.log(guessedLetters);
+        numberOfGuesses (guess);
         showGuessedLetters();
         updateWordInProgress(guessedLetters);
     }
@@ -89,6 +102,26 @@ const updateWordInProgress = function (guessedLetters){
         wordInProgress.innerText = checkWord.join("");
         ifWin();
 };
+
+const numberOfGuesses = function (guess){
+    wordUpperCase = word.toUpperCase();
+    if (!wordUpperCase.includes(guess)){
+        message.innerText= `Sorry. There is no ${guess}.`;
+        remainingGuesses -=1;
+    } else {
+        message.innerText = `Hey, good guess. The word has the letter ${guess}`;
+    }
+
+    if (remainingGuesses === 0){
+        message.innerHTML = `Sorry, you're all out of guesses. The mystery word is <span class="highlight">${word}</span>.`;
+
+    } else if (remainingGuesses === 1){
+        remainingGuessesSpan.innerText = `You have ${remainingGuesses} guess left.`;
+    } else {
+        remainingGuessesSpan.innerText = `You have ${remainingGuesses} guesses left.`;
+    }
+};
+
 
 const ifWin = function (){
     if (word.toUpperCase() === wordInProgress.innerText){
